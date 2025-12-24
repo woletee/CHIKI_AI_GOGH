@@ -2,3 +2,5 @@
 *.safetensors
 **/.vscode/
 **/__pycache__/
+**/@eaDir/
+.DS_Store
