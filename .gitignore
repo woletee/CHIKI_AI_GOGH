@@ -1,2 +1,4 @@
 *.bin
 *.safetensors
+**/.vscode/
+**/__pycache__/
