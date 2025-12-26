@@ -27,7 +27,7 @@ MODEL = None
 @app.on_event("startup")
 def load_models():
     global MODEL
-    print(f"🚀 Loading models onto {DEVICE.upper()}...")
+    print(f"Loading models onto {DEVICE.upper()}...")
     
     # 1. Load ControlNet
     controlnet = ControlNetModel.from_pretrained(CONTROLNET_PATH, torch_dtype=torch.float16).to(DEVICE)
@@ -42,8 +42,6 @@ def load_models():
     ).to(DEVICE)
     
     pipe.scheduler = DDIMScheduler.from_config(pipe.scheduler.config)
-    
-    # Optimized for memory/speed without needing xformers
     pipe.vae.enable_tiling()
     pipe.enable_attention_slicing()
 
@@ -58,7 +56,7 @@ def load_models():
     )
     
     empty_cache()
-    print("✅ API System Ready!")
+    print(" API System Ready!")
 
 @app.post("/generate-gogh")
 async def generate_gogh(
@@ -72,17 +70,13 @@ async def generate_gogh(
         if not os.path.exists(style_path):
             raise HTTPException(status_code=404, detail=f"Style image {style_id} not found.")
         style_image = Image.open(style_path).convert("RGB")
-
-        # 2. Process Uploaded Content Image
         content_data = await content_file.read()
         content_image = Image.open(io.BytesIO(content_data)).convert("RGB")
         original_width, original_height = content_image.size
         
-        # Prepare for SDXL (ControlNet needs 1024)
         controlnet_cond_image = resize_image(content_image, short=1024)
 
-        # 3. GPU Inference
-        print(f"🎨 Generating Gogh style (Scale: {scale})...")
+        print(f"Generating Gogh style (Scale: {scale})...")
         with torch.no_grad():
             generated = MODEL.generate(
                 prompt="masterpiece, best quality, van gogh style, oil painting",
@@ -109,7 +103,7 @@ async def generate_gogh(
         return FileResponse(output_filename, media_type="image/png")
 
     except Exception as e:
-        print(f"🔥 API Error: {str(e)}")
+        print(f" API Error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
